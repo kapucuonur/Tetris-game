@@ -1,0 +1,212 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="tetris" width="300" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('tetris');
+        const ctx = canvas.getContext('2d');
+
+        // Oyun alanının boyutları
+        const ROWS = 20;
+        const COLS = 10;
+        const BLOCK_SIZE = 30;
+
+        // Renkler
+        const COLORS = [
+            'red', 'blue', 'green', 'purple', 'orange', 'cyan', 'yellow'
+        ];
+
+        // Tetromino şekilleri
+        const TETROMINOS = {
+            I: [
+                [0, 0, 0, 0],
+                [1, 1, 1, 1],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
+            ],
+            O: [
+                [1, 1],
+                [1, 1]
+            ],
+            T: [
+                [0, 1, 0],
+                [1, 1, 1],
+                [0, 0, 0]
+            ],
+            Z: [
+                [1, 1, 0],
+                [0, 1, 1],
+                [0, 0, 0]
+            ],
+            S: [
+                [0, 1, 1],
+                [1, 1, 0],
+                [0, 0, 0]
+            ],
+            L: [
+                [1, 0, 0],
+                [1, 1, 1],
+                [0, 0, 0]
+            ],
+            J: [
+                [0, 0, 1],
+                [1, 1, 1],
+                [0, 0, 0]
+            ]
+        };
+
+        // Tahta durumu
+        let board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+
+        // Mevcut tetromino
+        let currentTetromino = randomTetromino();
+        let currentX = Math.floor(COLS / 2 - 2);
+        let currentY = 0;
+
+        // Tetrominoyu rastgele seçme
+        function randomTetromino() {
+            const name = Object.keys(TETROMINOS)[Math.floor(Math.random() * Object.keys(TETROMINOS).length)];
+            return { name, shape: [...TETROMINOS[name]], color: COLORS[Math.floor(Math.random() * COLORS.length)] };
+        }
+
+        // Tahtayı çizme
+        function drawBoard() {
+            board.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value) {
+                        ctx.fillStyle = value;
+                        ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                });
+            });
+        }
+
+        // Tetrominoyu çizme
+        function drawTetromino(tetromino, x, y) {
+            tetromino.shape.forEach((row, dy) => {
+                row.forEach((value, dx) => {
+                    if (value) {
+                        ctx.fillStyle = tetromino.color;
+                        ctx.fillRect((x + dx) * BLOCK_SIZE, (y + dy) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                });
+            });
+        }
+
+        // Tetrominoyu tahtaya ekleme
+        function mergeTetromino(tetromino, x, y) {
+            tetromino.shape.forEach((row, dy) => {
+                row.forEach((value, dx) => {
+                    if (value) {
+                        if (y + dy >= 0) {
+                            board[y + dy][x + dx] = tetromino.color;
+                        }
+                    }
+                });
+            });
+        }
+
+        // Tahtayı kontrol etme
+        function isValidMove(tetromino, x, y) {
+            return tetromino.shape.every((row, dy) =>
+                row.every((value, dx) =>
+                    !value || (x + dx >= 0 && x + dx < COLS && y + dy < ROWS && (!board[y + dy] || !board[y + dy][x + dx]))
+                )
+            );
+        }
+
+        // Satırları temizleme
+        function clearLines() {
+            for (let y = ROWS - 1; y >= 0; y--) {
+                if (board[y].every(value => value)) {
+                    board.splice(y, 1);
+                    board.unshift(Array(COLS).fill(0));
+                }
+            }
+        }
+
+        // Ana oyun döngüsü
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!isValidMove(currentTetromino, currentX, currentY + 1)) {
+                mergeTetromino(currentTetromino, currentX, currentY);
+                clearLines();
+                currentTetromino = randomTetromino();
+                currentX = Math.floor(COLS / 2 - 2);
+                currentY = 0;
+
+                if (!isValidMove(currentTetromino, currentX, currentY)) {
+                    alert('Game Over!');
+                    document.location.reload();
+                }
+            } else {
+                currentY++;
+            }
+
+            drawBoard();
+            drawTetromino(currentTetromino, currentX, currentY);
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Klavye kontrolleri
+        document.addEventListener('keydown', (event) => {
+            const { key } = event;
+            let newX = currentX;
+            let newY = currentY;
+
+            if (key === 'ArrowLeft') newX = currentX - 1;
+            if (key === 'ArrowRight') newX = currentX + 1;
+            if (key === 'ArrowDown') newY = currentY + 1;
+            if (key === 'ArrowUp') {
+                const rotated = rotate(currentTetromino.shape);
+                if (isValidMove({ shape: rotated }, currentX, currentY)) {
+                    currentTetromino.shape = rotated;
+                }
+            }
+
+            if (isValidMove(currentTetromino, newX, newY)) {
+                currentX = newX;
+                currentY = newY;
+            }
+        });
+
+        // Tetrominoyu döndürme
+        function rotate(shape) {
+            const size = shape.length;
+            const newShape = Array.from({ length: size }, () => Array(size).fill(0));
+
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    newShape[x][size - 1 - y] = shape[y][x];
+                }
+            }
+
+            return newShape;
+        }
+
+        // Oyunu başlat
+        gameLoop();
+    </script>
+</body> -->
