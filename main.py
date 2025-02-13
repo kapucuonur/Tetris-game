@@ -1,6 +1,9 @@
 import pygame
 import random
 
+# Ses modülünü devre dışı bırak
+pygame.mixer.quit()
+
 # Pygame initialize
 pygame.init()
 
