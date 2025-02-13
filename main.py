@@ -1,8 +1,9 @@
-from flask import Flask, render_template
+from flask import Flask, render_template_string
 import threading
 import pygame
 import random
 import os
+import time
 
 app = Flask(__name__)
 
@@ -89,4 +90,53 @@ def clear_lines():
         grid.insert(0, [0 for _ in range(GRID_WIDTH)])
     return len(full_lines)
 
-#
+# Game state
+current_piece, current_color = random.choice(TETROMINOS)
+next_piece, next_color = random.choice(TETROMINOS)
+piece_x, piece_y, piece_rotation = GRID_WIDTH // 2 - len(current_piece[0][0]) // 2, 0, 0
+score = 0
+fall_time = 0
+fall_speed = 500  # ms
+
+# Game loop
+def game_loop():
+    global piece_x, piece_y, piece_rotation, score, current_piece, current_color, next_piece, next_color
+    while True:
+        time.sleep(0.5)  # Her 0.5 saniyede bir tetrominoyu bir satır aşağı taşı
+        if not is_valid_move(current_piece[0], piece_x, piece_y + 1, piece_rotation):
+            add_to_grid(current_piece[0], piece_x, piece_y, piece_rotation, current_color)
+            cleared_lines = clear_lines()
+            score += cleared_lines * 100
+            current_piece, current_color = next_piece, next_color
+            next_piece, next_color = random.choice(TETROMINOS)
+            piece_x, piece_y, piece_rotation = GRID_WIDTH // 2 - len(current_piece[0][0]) // 2, 0, 0
+            if not is_valid_move(current_piece[0], piece_x, piece_y, piece_rotation):
+                break
+        else:
+            piece_y += 1
+
+@app.route('/')
+def index():
+    global grid
+    svg_content = f'''
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SCREEN_WIDTH} {SCREEN_HEIGHT}" style="background-color: black;">
+        {draw_grid()}
+    </svg>
+    '''
+    return f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Tetris</title>
+        <meta http-equiv="refresh" content="0.5">
+    </head>
+    <body>
+        <h1>Score: {score}</h1>
+        <div>{svg_content}</div>
+    </body>
+    </html>
+    '''
+
+if __name__ == '__main__':
+    threading.Thread(target=game_loop, daemon=True).start()
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8000)))
