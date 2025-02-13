@@ -30,15 +30,15 @@ RED = (255, 0, 0)
 
 colors = [CYAN, YELLOW, ORANGE, BLUE, GREEN, PURPLE, RED]
 
-# Tetromino shapes and their corresponding colors
+# Tetromino shapes
 tetrominos = [
-    ([[1, 1, 1, 1]], CYAN),  # I
-    ([[1, 1], [1, 1]], YELLOW),  # O
-    ([[0, 1, 0], [1, 1, 1]], PURPLE),  # T
-    ([[1, 1, 0], [0, 1, 1]], GREEN),  # Z
-    ([[0, 1, 1], [1, 1, 0]], RED),  # S
-    ([[1, 1, 1], [0, 0, 1]], ORANGE),  # L
-    ([[1, 1, 1], [1, 0, 0]], BLUE)  # J
+    [[1, 1, 1, 1]],  # I
+    [[1, 1], [1, 1]],  # O
+    [[0, 1, 0], [1, 1, 1]],  # T
+    [[1, 1, 0], [0, 1, 1]],  # Z
+    [[0, 1, 1], [1, 1, 0]],  # S
+    [[1, 1, 1], [0, 0, 1]],  # L
+    [[1, 1, 1], [1, 0, 0]]   # J
 ]
 
 # Game grid
@@ -54,7 +54,7 @@ def draw_grid():
     for y, row in enumerate(grid):
         for x, val in enumerate(row):
             if val:
-                draw_block(x, y, val)
+                draw_block(x, y, colors[val - 1])
 
 # Check if a position is valid
 def valid_position(piece, x, y, rotation):
@@ -73,14 +73,14 @@ def rotate_tetromino(piece, rotation):
     return [list(reversed(col)) for col in zip(*piece)] if rotation % 4 != 0 else piece
 
 # Add piece to grid
-def add_to_grid(piece, x, y, rotation, color):
+def add_to_grid(piece, x, y, rotation, color_idx):
     rotated_piece = rotate_tetromino(piece, rotation)
     for dy, row in enumerate(rotated_piece):
         for dx, cell in enumerate(row):
             if cell:
                 nx, ny = x + dx, y + dy
                 if 0 <= ny < GRID_HEIGHT and 0 <= nx < GRID_WIDTH:
-                    grid[ny][nx] = color
+                    grid[ny][nx] = color_idx
 
 # Clear full lines
 def clear_lines():
@@ -92,8 +92,8 @@ def clear_lines():
 
 # Main game loop
 def main():
-    current_piece, current_color = random.choice(tetrominos)
-    next_piece, next_color = random.choice(tetrominos)
+    current_piece = random.choice(tetrominos)
+    next_piece = random.choice(tetrominos)
     piece_x, piece_y, piece_rotation = GRID_WIDTH // 2 - len(current_piece[0]) // 2, 0, 0
     score = 0
     fall_time = 0
@@ -129,11 +129,12 @@ def main():
             if valid_position(current_piece, piece_x, piece_y + 1, piece_rotation):
                 piece_y += 1
             else:
-                add_to_grid(current_piece, piece_x, piece_y, piece_rotation, current_color)
+                color_idx = random.randint(1, len(colors))
+                add_to_grid(current_piece, piece_x, piece_y, piece_rotation, color_idx)
                 cleared_lines = clear_lines()
                 score += cleared_lines * 100
-                current_piece, current_color = next_piece, next_color
-                next_piece, next_color = random.choice(tetrominos)
+                current_piece = next_piece
+                next_piece = random.choice(tetrominos)
                 piece_x, piece_y, piece_rotation = GRID_WIDTH // 2 - len(current_piece[0]) // 2, 0, 0
                 if not valid_position(current_piece, piece_x, piece_y, piece_rotation):
                     running = False
@@ -146,7 +147,7 @@ def main():
                 if cell:
                     nx, ny = piece_x + dx, piece_y + dy
                     if 0 <= ny < GRID_HEIGHT and 0 <= nx < GRID_WIDTH:
-                        draw_block(nx, ny, current_color)
+                        draw_block(nx, ny, colors[random.randint(0, len(colors) - 1)])
 
         # Draw sidebar
         pygame.draw.rect(screen, WHITE, (SCREEN_WIDTH, 0, SIDEBAR_WIDTH, SCREEN_HEIGHT), 2)
@@ -160,7 +161,7 @@ def main():
         for dy, row in enumerate(next_piece):
             for dx, cell in enumerate(row):
                 if cell:
-                    draw_block(SCREEN_WIDTH // BLOCK_SIZE + dx + 2, dy + 7, next_color)
+                    draw_block(SCREEN_WIDTH // BLOCK_SIZE + dx + 2, dy + 7, colors[random.randint(0, len(colors) - 1)])
 
         pygame.display.flip()
 
