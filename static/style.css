@@ -12,6 +12,14 @@ body {
 
 .game-container {
     display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.game-area {
+    display: flex;
+    justify-content: center;
 }
 
 canvas {
@@ -20,7 +28,7 @@ canvas {
 }
 
 .info {
-    margin-left: 20px;
+    text-align: center;
 }
 
 #next-piece {
@@ -48,6 +56,7 @@ canvas {
     background-color: #2c3e50;
 }
 
+/* Mobil Cihazlar için Stil */
 @media (max-width: 600px) {
     .game-container {
         flex-direction: column;
@@ -55,17 +64,17 @@ canvas {
     }
 
     .info {
-        margin-left: 0;
         margin-top: 20px;
     }
 
     .controls {
-        flex-direction: column;
-        align-items: center;
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
     }
 
     .controls button {
-        width: 100%;
+        width: 80px;
         margin-bottom: 10px;
     }
 }
