@@ -1,0 +1,28 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #2c3e50;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+.game-container {
+    display: flex;
+}
+
+canvas {
+    border: 2px solid #34495e;
+    background-color: #1c1c1c;
+}
+
+.info {
+    margin-left: 20px;
+}
+
+#next-piece {
+    border: 2px solid #34495e;
+    background-color: #1c1c1c;
+}
