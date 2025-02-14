@@ -148,6 +148,35 @@ document.addEventListener('keydown', event => {
     draw();
 });
 
+// Dokunmatik Kontroller
+document.getElementById('left').addEventListener('click', () => {
+    if (validMove(currentPiece, currentPiece.x - 1, currentPiece.y)) {
+        currentPiece.x--;
+    }
+    draw();
+});
+
+document.getElementById('right').addEventListener('click', () => {
+    if (validMove(currentPiece, currentPiece.x + 1, currentPiece.y)) {
+        currentPiece.x++;
+    }
+    draw();
+});
+
+document.getElementById('rotate').addEventListener('click', () => {
+    const rotated = rotatePiece(currentPiece);
+    if (validMove(rotated, currentPiece.x, currentPiece.y)) {
+        currentPiece.shape = rotated.shape;
+    }
+    draw();
+});
+
+document.getElementById('down').addEventListener('click', () => {
+    if (validMove(currentPiece, currentPiece.x, currentPiece.y + 1)) {
+        currentPiece.y++;
+    }
+    draw();
+});
 function rotatePiece(piece) {
     const rotated = piece.shape[0].map((_, i) =>
         piece.shape.map(row => row[i]).reverse()
