@@ -177,11 +177,13 @@ document.getElementById('down').addEventListener('click', () => {
     }
     draw();
 });
+
 document.getElementById('fullscreen').addEventListener('click', () => {
     if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen();
     }
 });
+
 function rotatePiece(piece) {
     const rotated = piece.shape[0].map((_, i) =>
         piece.shape.map(row => row[i]).reverse()
